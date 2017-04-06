@@ -136,6 +136,9 @@ def f_orig(F, K, N):
     assert(len(ITER_COORD) == len(WEIGHT))
 
     F_ = F.copy()
+    if N == 4:
+        N = 8
+        K = K * 2
 
     if K % 2 == 0:
         for k, i in enumerate(ITER_COORD):
@@ -157,8 +160,29 @@ def f_orig_pi_2(F, K, N):
     '''
     Fast computing for pi / 2 rotation
     '''
-    pass
+    w_ = 3
+    ITER_COORD = [(0, 0), (0, 1), (0, 2), (1, 2), (2, 2), (2, 1), (2, 0), (1, 0)]
 
+    F_ = F.copy()
+
+    for k, v in enumerate(ITER_COORD):
+        y, x = v
+        print (k - 2*K) % N
+        Y, X = ITER_COORD[(k - 2*K) % N]
+
+        F_[y][x] = F[Y][X]
+    
+    return F_
+
+def test_rot_spin():
+    N = 8
+    F = np.arange(N*9).reshape(N, 3, 3).astype(np.float32)
+    print F
+    F_ = F.copy()
+    for n in range(N):
+      for k in range(N):
+        F_[k][...] = f_orig(F[(k-n) % N], 4, N)
+      print n, 'Rotate', F_
 # An Active Rotating Filter is a weight matrix in shape of (W x W x N)
 # Like traditional Convolution Filter, W is the width of the filter.
 # N is the number of rotations. Typical 4 or 8.
@@ -182,4 +206,11 @@ if __name__ == '__main__':
     for i in range(1,3):
         interpolation(orig_coord(std_coord, i, 8), np.arange(9).reshape((3,3)).astype(np.float32))
 
-    print_mat(f_orig(np.arange(9).reshape((3,3)).astype(np.float32), 0, 8))
+    print 'interpolation'
+    interpolation(orig_coord(std_coord, -2, 8), np.arange(9).reshape((3,3)).astype(np.float32))
+    print "f_orig"
+    print_mat(f_orig(np.arange(9).reshape((3,3)).astype(np.float32), -2, 8))
+    print "orig_2"
+    print_mat(f_orig_pi_2(np.arange(9).reshape((3,3)).astype(np.float32), -2/2, 8))
+
+    test_rot_spin()
